@@ -1,0 +1,36 @@
+----------------- HTML -----------
+
+<form method="post"id="custom_review_form">
+        <span class="all_fields_fill"><?php echo $fill_all_fields; ?></span>
+        <input type="hidden" id="rating" name="rating" value="-1">
+        <div class="rating">
+        <i class="ratings_stars fa fa-star" data-rating="1"></i>
+        <i class="ratings_stars fa fa-star" data-rating="2"></i>
+        <i class="ratings_stars fa fa-star" data-rating="3"></i>
+        <i class="ratings_stars fa fa-star" data-rating="4"></i>
+        <i class="ratings_stars fa fa-star" data-rating="5"></i>
+        </div>
+        <input type="text" name="name_of_cs" placeholder="Your Name">
+        <textarea name="review_box" id="review_box" cols="30" rows="10" placeholder="Write A Review" ></textarea>
+        <input type="submit" name="submit_review">
+    </form>
+
+
+
+
+
+-------JQUERY--------------
+
+jQuery(window).on('load' , function(){
+    jQuery('.rating').on('click', '.ratings_stars', function () {
+        var star = jQuery(this)
+        star.addClass('selected')
+        star.prevAll().addClass('selected')
+        star.nextAll().removeClass('selected')
+        jQuery('#rating').val(star.data('rating'))
+      });
+
+})
+
+
+
