@@ -1,0 +1,43 @@
+// add custom interval
+function cron_add_minute($schedules)
+{
+	// Adds once every minute to the existing schedules.
+	$schedules['every_two_days'] = array(
+		'interval' => 172800,
+		'display' => __('Every Two Days')
+	);
+	return $schedules;
+}
+add_filter('cron_schedules', 'cron_add_minute');
+
+
+do_action('woo_status_change_after_two_days', $args);
+
+add_action('init', 'woo_order_status', 10, 1);
+function woo_order_status($order_id)
+{
+	update_option('blogname', 'ok');
+	$args = array(
+		'post_type' => 'shop_order',
+		'post_status' => 'completed',
+		'posts_per_page' => -1,
+	);
+	$my_query = new WP_Query($args);
+	if ($my_query->have_posts()) {
+
+		while ($my_query->have_posts()) : $my_query->the_post();
+			$order_id = get_the_ID();
+			$order = new WC_Order($order_id);
+			if (!empty($order)) {
+				if ($order->get_status() == 'completed') {
+					$order->update_status('dokonen');
+				}
+			}
+		endwhile;
+	}
+
+}
+if (!wp_next_scheduled('init')) {
+
+	wp_schedule_event(time(), 'every_two_days', 'init', [], true);
+}
