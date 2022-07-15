@@ -1,22 +1,17 @@
-// add custom interval
 function cron_add_minute($schedules)
 {
 	// Adds once every minute to the existing schedules.
-	$schedules['every_two_days'] = array(
-		'interval' => 172800,
+	$schedules['everytwodays'] = array(
+		'interval' => 180,
 		'display' => __('Every Two Days')
 	);
 	return $schedules;
 }
 add_filter('cron_schedules', 'cron_add_minute');
 
-
-do_action('woo_status_change_after_two_days', $args);
-
-add_action('init', 'woo_order_status', 10, 1);
-function woo_order_status($order_id)
+add_action('times_to_check_order_status', 'woo_order_status', 10);
+function woo_order_status()
 {
-	update_option('blogname', 'ok');
 	$args = array(
 		'post_type' => 'shop_order',
 		'post_status' => 'completed',
@@ -35,9 +30,13 @@ function woo_order_status($order_id)
 			}
 		endwhile;
 	}
-
+	// return $sms;
 }
-if (!wp_next_scheduled('init')) {
-
-	wp_schedule_event(time(), 'every_two_days', 'init', [], true);
+//creating custom hook
+function registering_hook_for_performing_action(){
+	do_action('times_to_check_order_status');
+}
+add_action('wp_head' , 'registering_hook_for_performing_action');
+if (!wp_next_scheduled('times_to_check_order_status')) {
+	wp_schedule_event(time(), 'everytwodays', 'times_to_check_order_status');
 }
