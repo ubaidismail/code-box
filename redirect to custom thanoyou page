@@ -1,0 +1,51 @@
+//redirect to custom thanoyou page and integrate order and bank account details
+add_action('template_redirect', 'rudr_order_received_custom_payment_redirect');
+
+	function rudr_order_received_custom_payment_redirect()
+	{
+
+		// do nothing if we are not on the order received page
+		if (!is_wc_endpoint_url('order-received') || empty($_GET['key'])) {
+			return;
+		}
+
+		// Get the order ID
+		$order_id = wc_get_order_id_by_order_key($_GET['key']);
+		// elementorProFrontend.modules.popup.showPopup( { id: 16793 } );
+
+		// Get an instance of the WC_Order object
+		$order = wc_get_order($order_id);
+
+		if ('cod' === $order->get_payment_method()) {
+			// $redirect_url = site_url('#elementor-action%3Aaction%3Dpopup%3Aopen%26settings%3DeyJpZCI6IjE2NzkzIiwidG9nZ2xlIjpmYWxzZX0%3D');
+			// if cash of delivery, redirecto to a custom thank you page
+			// $redirect_url = home_url('/order-received/'.is_wc_endpoint_url( 'order-received' ).'/?key='.$_GET['');
+			wp_safe_redirect(site_url('/thank-you/'));
+			exit; // always exit
+		}
+
+
+		// Now we can check what payment method was used for order
+
+		if ('bacs' === $order->get_payment_method()) {
+			// if cash of delivery, redirecto to a custom thank you page
+			wp_safe_redirect(site_url('/thank-you-bacs/'));
+			exit; // always exit
+		}
+	}
+
+	add_shortcode('order_and_bank_detials', 'order_detials_bacs');
+	function order_detials_bacs()
+	{
+		$customer_id = get_current_user_id();
+		$order = wc_get_customer_last_order($customer_id);
+		$bacs_accounts_info = get_option( 'woocommerce_bacs_accounts');
+	?>
+ 	<div class="woo-detials">
+ 		<span>Číslo účtu: <strong><?php echo $bacs_accounts_info[0]['account_number']; ?></strong></span> <br>
+ 		<span>Variabilní symbol: <strong><?php echo $order->get_id(); ?></strong></span> <br>
+ 		<span style="color: #ffffff;">Celkem: <strong><?php echo $order->get_total(); ?> Kč</strong></span> <br>
+ 	</div>
+ <?php
+		
+	}
