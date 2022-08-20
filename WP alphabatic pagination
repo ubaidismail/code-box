@@ -1,0 +1,87 @@
+//for function.php
+
+
+//A TO Z filter
+function wp_dict_web_posts_where_for_alpha_pagi( $where, $query ) {
+    global $wpdb;
+
+    $starts_with = esc_sql( $query->get( 'starts_with' ) );
+
+    if ( $starts_with ) {
+        $where .= " AND $wpdb->posts.post_title LIKE '$starts_with%'";
+    }
+
+    return $where;
+}
+add_filter( 'posts_where', 'wp_dict_web_posts_where_for_alpha_pagi', 10, 2 );
+
+add_shortcode('ABC_Filter', 'a_to_z_filter_wp_func');
+
+function a_to_z_filter_wp_func()
+{
+
+    ?>
+
+    <div class="filter-alphabatically">
+        <span>Popular</span>
+        <?php
+        $browse_url = home_url('/browse');
+        foreach (range('a', 'z') as $v) {
+            echo '<a href="'.$browse_url.'?letter='.$v.'">'.$v.'</a>';
+        }
+        ?>
+    </div>
+<?php
+ 
+}
+
+//For template file code
+
+  <?php
+/*
+Template Name: Alphabatic Search Result
+*/
+get_header();
+?>
+<div class="container-site">
+    <?php
+  if ($_GET['letter']) {
+        $get_letter = $_GET['letter'];
+        $args = array(
+            'post_type' => 'post',
+            's' => $get_letter,
+            'starts_with' => $get_letter,
+        );
+        $wp_qry = new WP_Query($args);
+
+        if ($wp_qry->have_posts()){
+            while ($wp_qry->have_posts()) :
+                $wp_qry->the_post();
+                ?>
+                    
+                        <h1>Jamaican Patois Dictionary - Patois Words Starting with <span><?php echo $get_letter;  ?></span></h1>
+                        <div class="search-re-inner">
+                            <hr>
+                            <strong><?php echo $get_letter?></strong>
+                            <ul>
+                                <li><a href="<?php echo get_the_permalink(); ?>"><?php echo get_the_title()?></a></li>
+                            </ul>
+                        </div>
+                  
+                <?php
+            endwhile;
+        }else{
+            ?>
+            <div class="container-site">
+                <h1>Not found anything with letter <span><?php echo $get_letter;  ?></span></h1>
+            </div>
+        <?php
+        }
+    }
+    ?>
+    </div>
+    
+    <?php
+    get_footer();
+
+    ?>
