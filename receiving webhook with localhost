@@ -1,0 +1,14 @@
+
+Set folder detials like: https://www.cloudways.com/blog/configure-virtual-host-on-windows-10-for-wordpress/
+
+install ngrok tunnel: 
+follow installing and runnnng documentation from here: https://dashboard.ngrok.com/tunnels/agents
+
+for setting host header 
+ngrok http 80 --host-header="mylocalapp.test"
+
+OR 
+ngrok http --host-header=mylocalapp.test 80
+
+
+For ngrok existing task killing: use this command: taskkill /f /im ngrok.exe
