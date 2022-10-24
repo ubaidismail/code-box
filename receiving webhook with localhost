@@ -10,5 +10,6 @@ ngrok http 80 --host-header="mylocalapp.test"
 OR 
 ngrok http --host-header=mylocalapp.test 80
 
+for virtual hosting setting directory: C:\xampp\apache\conf\extra
 
 For ngrok existing task killing: use this command: taskkill /f /im ngrok.exe
