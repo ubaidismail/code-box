@@ -1,0 +1,91 @@
+ <script type="module">
+        import Shepherd from 'https://cdn.jsdelivr.net/npm/shepherd.js@13.0.0/dist/esm/shepherd.mjs';
+        let check_tour_seen;
+
+        async function checkTourSeen(userId, tourId) {
+            try {
+                const response = await fetch('/check-tour-seen', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        tour_id: tourId
+                    })
+                });
+
+                const data = await response.json();
+                return data.data;
+            } catch (error) {
+                console.error('Error:', error);
+                return false; // Default to false if error occurs
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            var tourData = <?php echo !empty($getOboardingTours) ? json_encode($getOboardingTours) : '[]'; ?>;
+            var user_id = <?php echo $user_id; ?>;
+
+            const tour = new Shepherd.Tour({
+                useModalOverlay: true,
+                defaultStepOptions: {
+                    classes: '',
+                    scrollTo: true,
+                    cancelIcon: {
+                        enabled: true
+                    },
+                    buttons: [{
+                            text: 'Exit',
+                            action: () => tour.cancel()
+                        },
+                        {
+                            text: 'Finish',
+                            action: () => tour.complete()
+                        }
+                    ]
+                }
+            });
+
+            // Wait for all API calls before proceeding
+            let filteredTourData = [];
+            for (const data of tourData) {
+                const isLastStep = tourData.indexOf(data) === tourData.length - 1;
+                let tour_id = data.id;
+                check_tour_seen = await checkTourSeen(user_id, tour_id);
+
+                if (!check_tour_seen) { // Only include steps if the tour has not been seen
+                    filteredTourData.push({
+                        title: data.tour_title,
+                        text: data.tour_description,
+                        attachTo: {
+                            element: data.element_class,
+                            on: data.position
+                        },
+                        buttons: [{
+                            text: isLastStep ? 'Finish' : 'Next',
+                            action: () => {
+                                fetch('/mark-tour-complete', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        tour_id: data.id
+                                    })
+                                }).then(() => {
+                                    tour.next();
+                                });
+                            },
+                        }]
+                    });
+                }
+            }
+
+            // Add filtered steps & start the tour only if there are unseen steps
+            if (filteredTourData.length > 0) {
+                filteredTourData.forEach(step => tour.addStep(step));
+                tour.start();
+            }
+        });
+    </script>
